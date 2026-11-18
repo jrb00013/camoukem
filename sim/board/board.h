@@ -1,5 +1,5 @@
-#ifndef SHAREBLIP_BOARD_H
-#define SHAREBLIP_BOARD_H
+#ifndef KRIVOX_BOARD_H
+#define KRIVOX_BOARD_H
 
 #include <stdint.h>
 #include <stddef.h>

@@ -1,5 +1,5 @@
-#ifndef SHAREBLIP_HOCPA_H
-#define SHAREBLIP_HOCPA_H
+#ifndef KRIVOX_HOCPA_H
+#define KRIVOX_HOCPA_H
 
 #include "board.h"
 #include <stdint.h>
