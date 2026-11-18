@@ -22,3 +22,4 @@ dist/
 *.trace
 *.npz
 tests/test_asm_mask
+sim/board/board_sim
