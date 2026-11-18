@@ -100,9 +100,10 @@ double hocpa_order2_pub(const board_t *b, const uint8_t *pub, int poi0, int poi1
 int hocpa_rank_order1_pub(const board_t *b, const uint8_t *pub, int poi, int hyp_max, int hyp_op,
                           double *best_corr) {
     int h, best_h = -1;
-    double best = -1;
+    double best = -1e300;
+    /* Signed corr — fabs aliases XOR complements (HW(~x)=8-HW(x)). */
     for (h = 0; h < hyp_max; h++) {
-        double c = fabs(hocpa_order1_pub(b, pub, poi, h, hyp_op));
+        double c = hocpa_order1_pub(b, pub, poi, h, hyp_op);
         if (c > best) {
             best = c;
             best_h = h;
@@ -116,9 +117,9 @@ int hocpa_rank_order1_pub(const board_t *b, const uint8_t *pub, int poi, int hyp
 int hocpa_rank_order2_pub(const board_t *b, const uint8_t *pub, int poi0, int poi1, int hyp_max,
                           int hyp_op, double *best_corr) {
     int h, best_h = -1;
-    double best = -1;
+    double best = -1e300;
     for (h = 0; h < hyp_max; h++) {
-        double c = fabs(hocpa_order2_pub(b, pub, poi0, poi1, h, hyp_op));
+        double c = hocpa_order2_pub(b, pub, poi0, poi1, h, hyp_op);
         if (c > best) {
             best = c;
             best_h = h;
