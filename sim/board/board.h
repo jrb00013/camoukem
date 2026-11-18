@@ -1,5 +1,5 @@
-#ifndef CAMOUKEM_BOARD_H
-#define CAMOUKEM_BOARD_H
+#ifndef KRIVOX_BOARD_H
+#define KRIVOX_BOARD_H
 
 #include <stdint.h>
 #include <stddef.h>

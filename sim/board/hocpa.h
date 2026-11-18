@@ -1,5 +1,5 @@
-#ifndef CAMOUKEM_HOCPA_H
-#define CAMOUKEM_HOCPA_H
+#ifndef KRIVOX_HOCPA_H
+#define KRIVOX_HOCPA_H
 
 #include "board.h"
 #include <stdint.h>
