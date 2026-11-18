@@ -1,0 +1,17 @@
+name: aarch64-asm
+on:
+  push:
+    branches: [main]
+  pull_request:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: install cross + qemu
+        run: |
+          sudo apt-get update -qq
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq \
+            gcc-aarch64-linux-gnu binutils-aarch64-linux-gnu qemu-user make
+      - name: build and test
+        run: make test
