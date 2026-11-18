@@ -1,0 +1,4 @@
+root = true
+[*.{S,s,c,h}]
+indent_style = space
+indent_size = 4
