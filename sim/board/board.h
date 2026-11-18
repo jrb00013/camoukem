@@ -1,5 +1,5 @@
-#ifndef MASKLAMP_BOARD_H
-#define MASKLAMP_BOARD_H
+#ifndef CAMOUKEM_BOARD_H
+#define CAMOUKEM_BOARD_H
 
 #include <stdint.h>
 #include <stddef.h>
