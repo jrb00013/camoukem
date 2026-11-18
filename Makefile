@@ -20,7 +20,8 @@ ASM_SRCS := \
 	asm/aarch64/intt.S \
 	asm/aarch64/basemul.S \
 	asm/aarch64/spin_mul.S \
-	asm/aarch64/mask_refresh.S
+	asm/aarch64/mask_refresh.S \
+	asm/aarch64/cntvct.S
 
 ASM_OBJS := $(ASM_SRCS:.S=.o)
 
