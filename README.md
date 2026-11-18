@@ -1,58 +1,50 @@
-# neonveil
+# masklamp
 
-```text
-   ███╗   ███╗██╗     ██╗  ██╗███████╗███╗   ███╗
-   ████╗ ████║██║     ██║ ██╔╝██╔════╝████╗ ████║
-   ██╔████╔██║██║     █████╔╝ █████╗  ██╔████╔██║
-   ██║╚██╔╝██║██║     ██╔═██╗ ██╔══╝  ██║╚██╔╝██║
-   ██║ ╚═╝ ██║███████╗██║  ██╗███████╗██║ ╚═╝ ██║
-   ╚═╝     ╚═╝╚══════╝╚═╝  ╚═╝╚══════╝╚═╝     ╚═╝
-        AArch64 · NEON · Masking · θ-gauge
-```
-
-**Experimental research repo: higher-order masked ML-KEM-768 with the hot path in hand-written AArch64 assembly.**
+AArch64 / NEON masked ML-KEM research lab — higher-order share kernels, θ-gauge spin, and a **full software SCA board** (shunt + ADC + HOCPA) that runs the real `.S` firmware under qemu.
 
 Owned by [`jrb00013`](https://github.com/jrb00013).
 
-This is not a tutorial clone of Kyber in C. The GitHub language bar is meant to read **Assembly**. Kernels live under `asm/aarch64/*.S`.
-
-## Thesis
-
-> Higher-order masked ML-KEM-768 · AArch64 NEON · θ-domain spin · software-sim HOCPA — on Jetson Orin.
-
-## What is assembly here
-
-| Kernel | File | Research angle |
-| --- | --- | --- |
-| Poly add/sub/neg/copy/zero | `poly_*.S` | NEON 8×int16 |
-| Barrett / csubq / tomont | `poly_reduce.S`, `montgomery.S` | CT reduction |
-| NTT / INTT / NEON NTT | `ntt.S`, `intt.S`, `ntt_neon.S` | Lattice hot path |
-| Basemul (+acc) | `basemul.S`, `basemul_acc.S` | NTT-domain mul |
-| Order-1/2 mask share | `mask_share.S`, `mask_order2.S` | SCA shares in asm |
-| θ multiplicative shares | `theta_mulshare.S` | Spatial / angle chart |
-| Unit spin | `spin_mul.S` | Gauge randomization |
-| CBD2 / compress / serdes | `poly_cbd2.S`, `poly_compress.S`, … | Sampling & wire |
-| Keccak-f[1600] | `keccak_f1600.S` | SHAKE/FO path in asm |
-| HW leak map | `hw_leak.S` | Sim-HOCPA traces |
-| CT cmov | `cmov.S` | FO compare helper |
-
-C under `src/` / `tests/` is a thin harness only (linguist-vendored via `.gitattributes`).
-
-## Build (no Docker required)
+## Quick start
 
 ```bash
-# uses $HOME/toolchains Arm GNU if present; on Orin: make CROSS_COMPILE=
-make clean && make asmcheck && make all
-make test   # needs qemu-aarch64 on x86
+./scripts/masklamp check      # build + kernel tests + board sim smoke
+./scripts/masklamp test      # asm self-tests only
+./scripts/masklamp sim       # full simulated HO-SCA board
+./scripts/masklamp sim-quick # faster board smoke
 ```
 
-## Docs
+Needs: Arm aarch64 cross GCC (auto-detects `$HOME/toolchains/...`) and `qemu-aarch64` on x86. On Jetson Orin: `make CROSS_COMPILE=`.
 
-[`ARCHITECTURE.md`](ARCHITECTURE.md) · [`docs/09-spatial-theta-masking.md`](docs/09-spatial-theta-masking.md)
+## What you get
+
+| Piece | What it is |
+| --- | --- |
+| `asm/aarch64/*.S` | Hand-written poly/NTT/mask/θ/Keccak kernels |
+| `sim/board/` | Simulated attack board + circuit model + HOCPA |
+| `./scripts/masklamp` | One CLI for build / test / simulate |
+
+## Simulated board
+
+Models shunt → amp → ADC, GPIO trigger, and 1st/2nd-order CPA against order-1 and order-2 asm masking.
+
+```bash
+./scripts/masklamp sim --traces 128 --noise 0.25 --coeffs 8
+```
+
+Details: [`sim/board/circuit.md`](sim/board/circuit.md)
+
+## Layout
+
+```text
+asm/aarch64/   # the product
+sim/board/     # full HO SCA board simulation
+src/ tests/    # thin harness
+docs/          # design notes (not a tutorial series)
+```
 
 ## Status
 
-Research / learning. **Not** production cryptography. Pushing asm-only gadgets, θ-domain shares, HOCPA simulation, NEON NTT.
+Experimental research. Not production crypto.
 
 ## License
 

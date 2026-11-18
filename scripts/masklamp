@@ -1,0 +1,65 @@
+#!/usr/bin/env bash
+# masklamp — user-facing entrypoint
+set -euo pipefail
+ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+cd "$ROOT"
+
+QEMU="$(command -v qemu-aarch64 || command -v qemu-aarch64-static || true)"
+run_a64() {
+  if [[ -z "${QEMU}" ]]; then
+    echo "error: need qemu-aarch64 to run AArch64 binaries on this host" >&2
+    exit 1
+  fi
+  "${QEMU}" "$@"
+}
+
+usage() {
+  cat <<'USAGE'
+masklamp — masked ML-KEM AArch64 lab + HO-SCA board sim
+
+Commands:
+  help         Show this help
+  version      Print version
+  build        Build library, tests, board sim
+  test         Run kernel self-tests
+  sim          Run full simulated HO-SCA board
+  sim-quick    Fewer traces
+  check        build + test + sim-quick
+  asmcheck     Count assembly sources
+
+Examples:
+  ./scripts/masklamp check
+  ./scripts/masklamp sim --traces 128 --noise 0.25
+USAGE
+}
+
+cmd="${1:-help}"
+shift || true
+
+case "$cmd" in
+  help|-h|--help) usage ;;
+  version)
+    echo "masklamp 0.1.0"
+    ;;
+  build) make -C "$ROOT" all ;;
+  test) make -C "$ROOT" test ;;
+  asmcheck) make -C "$ROOT" asmcheck ;;
+  sim)
+    make -C "$ROOT" sim/board/board_sim
+    run_a64 "$ROOT/sim/board/board_sim" "$@"
+    ;;
+  sim-quick)
+    make -C "$ROOT" sim/board/board_sim
+    run_a64 "$ROOT/sim/board/board_sim" --traces 32 --coeffs 4 --noise 0.5
+    ;;
+  check)
+    make -C "$ROOT" all test
+    make -C "$ROOT" sim/board/board_sim
+    run_a64 "$ROOT/sim/board/board_sim" --traces 32 --coeffs 4
+    echo "masklamp check OK"
+    ;;
+  *)
+    usage
+    exit 1
+    ;;
+esac

@@ -12,9 +12,10 @@ endif
 CC      := $(CROSS_COMPILE)gcc
 AS      := $(CROSS_COMPILE)gcc
 AR      := $(CROSS_COMPILE)ar
-CFLAGS  := -O2 -Wall -Wextra -std=c11 -Iinclude -fno-tree-vectorize
+CFLAGS  := -O2 -Wall -Wextra -std=c11 -Iinclude -Isim/board -fno-tree-vectorize
 ASFLAGS := -Iasm/aarch64
 LDFLAGS := -static
+LDLIBS  := -lm
 
 ASM_SRCS := \
 	asm/aarch64/poly_add.S \
@@ -50,9 +51,9 @@ ASM_SRCS := \
 ASM_OBJS := $(ASM_SRCS:.S=.o)
 LIB := libmlkem_neon.a
 
-.PHONY: all clean test asmcheck
+.PHONY: all clean test asmcheck sim
 
-all: $(LIB) tests/test_poly tests/test_ntt tests/test_mask tests/test_spin tests/test_asm_mask smoke
+all: $(LIB) tests/test_poly tests/test_ntt tests/test_mask tests/test_spin tests/test_asm_mask smoke sim/board/board_sim
 
 $(LIB): $(ASM_OBJS)
 	$(AR) rcs $@ $^
@@ -77,7 +78,18 @@ tests/test_spin: tests/test_spin.o src/spin.o $(LIB)
 tests/test_asm_mask: tests/test_asm_mask.o $(LIB)
 	$(CC) $(LDFLAGS) -o $@ $^
 smoke: src/main_smoke.o src/mask_order1.o src/spin.o $(LIB)
-	$(CC) $(LDFLAGS) -o $@ $^
+	$(CC) $(LDFLAGS) -o $@ $^ $(LDLIBS)
+
+sim/board/%.o: sim/board/%.c
+	$(CC) $(CFLAGS) -c -o $@ $<
+
+sim/board/board_sim: sim/board/board_sim.o sim/board/board.o sim/board/hocpa.o $(LIB)
+	$(CC) $(LDFLAGS) -o $@ $^ $(LDLIBS)
+
+sim: sim/board/board_sim
+	@QEMU=$$(command -v qemu-aarch64 || command -v qemu-aarch64-static || true); \
+	if [ -z "$$QEMU" ]; then echo "need qemu-aarch64"; exit 1; fi; \
+	$$QEMU ./sim/board/board_sim --traces 64 --coeffs 8
 
 asmcheck:
 	@echo "ASM files: $$(ls asm/aarch64/*.S | wc -l)"
@@ -91,8 +103,11 @@ test: all
 	$$QEMU ./tests/test_mask && \
 	$$QEMU ./tests/test_spin && \
 	$$QEMU ./tests/test_asm_mask && \
-	$$QEMU ./smoke && echo "ALL TESTS PASSED"
+	$$QEMU ./smoke && \
+	$$QEMU ./sim/board/board_sim --traces 32 --coeffs 4 >/dev/null && \
+	echo "ALL TESTS PASSED"
 
 clean:
-	rm -f $(ASM_OBJS) src/*.o tests/*.o $(LIB) \
-	  tests/test_poly tests/test_ntt tests/test_mask tests/test_spin tests/test_asm_mask smoke
+	rm -f $(ASM_OBJS) src/*.o tests/*.o sim/board/*.o $(LIB) \
+	  tests/test_poly tests/test_ntt tests/test_mask tests/test_spin tests/test_asm_mask smoke \
+	  sim/board/board_sim
