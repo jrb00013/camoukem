@@ -12,7 +12,7 @@
         DUT Vdd              sample @ trigger
            │
      ┌─────┴─────┐
-     │  "MCU"    │  ← AArch64 kernels under qemu (real camoukem .S)
+     │  "MCU"    │  ← AArch64 kernels under qemu (real shareblip .S)
      │  masked   │
      │  ML-KEM   │──── GPIO trigger (sim): high during secret op
      └───────────┘
