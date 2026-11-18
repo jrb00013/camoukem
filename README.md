@@ -44,3 +44,5 @@ Research / learning code — **not** production cryptography.
 ## License
 
 CC0-1.0
+
+<!-- shipped via PR train -->
