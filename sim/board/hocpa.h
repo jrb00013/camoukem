@@ -1,5 +1,5 @@
-#ifndef MASKLAMP_HOCPA_H
-#define MASKLAMP_HOCPA_H
+#ifndef CAMOUKEM_HOCPA_H
+#define CAMOUKEM_HOCPA_H
 
 #include "board.h"
 #include <stdint.h>

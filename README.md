@@ -1,50 +1,32 @@
-# masklamp
+# camoukem
 
-AArch64 / NEON masked ML-KEM research lab — higher-order share kernels, θ-gauge spin, and a **full software SCA board** (shunt + ADC + HOCPA) that runs the real `.S` firmware under qemu.
+AArch64 / NEON masked ML-KEM lab — hand-written `.S` kernels plus a full software HO-SCA board (shunt → ADC → HOCPA) that runs the real asm under qemu.
 
 Owned by [`jrb00013`](https://github.com/jrb00013).
 
 ## Quick start
 
 ```bash
-./scripts/masklamp check      # build + kernel tests + board sim smoke
-./scripts/masklamp test      # asm self-tests only
-./scripts/masklamp sim       # full simulated HO-SCA board
-./scripts/masklamp sim-quick # faster board smoke
+./scripts/camoukem check
+./scripts/camoukem test
+./scripts/camoukem sim --traces 200 --noise 0.2
 ```
 
-Needs: Arm aarch64 cross GCC (auto-detects `$HOME/toolchains/...`) and `qemu-aarch64` on x86. On Jetson Orin: `make CROSS_COMPILE=`.
+Needs aarch64 cross GCC (`$HOME/toolchains/...` auto-detected) and `qemu-aarch64` on x86. On Orin: `make CROSS_COMPILE=`.
 
-## What you get
+## Pieces
 
-| Piece | What it is |
+| Path | Role |
 | --- | --- |
-| `asm/aarch64/*.S` | Hand-written poly/NTT/mask/θ/Keccak kernels |
-| `sim/board/` | Simulated attack board + circuit model + HOCPA |
-| `./scripts/masklamp` | One CLI for build / test / simulate |
+| `asm/aarch64/*.S` | Poly / NTT / share / θ / Keccak kernels |
+| `sim/board/` | Simulated attack board + circuit + HOCPA |
+| `./scripts/camoukem` | CLI (`check` / `test` / `sim`) |
 
-## Simulated board
-
-Models shunt → amp → ADC, GPIO trigger, and 1st/2nd-order CPA against order-1 and order-2 asm masking.
-
-```bash
-./scripts/masklamp sim --traces 128 --noise 0.25 --coeffs 8
-```
-
-Details: [`sim/board/circuit.md`](sim/board/circuit.md)
-
-## Layout
-
-```text
-asm/aarch64/   # the product
-sim/board/     # full HO SCA board simulation
-src/ tests/    # thin harness
-docs/          # design notes (not a tutorial series)
-```
+Circuit model: [`sim/board/circuit.md`](sim/board/circuit.md)
 
 ## Status
 
-Experimental research. Not production crypto.
+Experimental. Not production crypto.
 
 ## License
 

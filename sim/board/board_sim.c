@@ -1,5 +1,5 @@
 /*
- * masklamp simulated higher-order SCA board
+ * camoukem simulated higher-order SCA board
  * Real AArch64 asm share kernels + HW ADC model + HOCPA with public inputs.
  */
 #include "board.h"
@@ -15,7 +15,7 @@ void mlkem_mask3_share_asm(int16_t *s0, int16_t *s1, int16_t *s2, const int16_t 
 
 static void usage(const char *argv0) {
     fprintf(stderr,
-            "masklamp board_sim — simulated HO masking SCA board\n\n"
+            "camoukem board_sim — simulated HO masking SCA board\n\n"
             "Usage:\n"
             "  %s [--traces N] [--noise SIGMA] [--seed S]\n\n"
             "See sim/board/circuit.md\n",
@@ -62,7 +62,7 @@ int main(int argc, char **argv) {
     if (!pub)
         return 1;
 
-    printf("masklamp board_sim\n");
+    printf("camoukem board_sim\n");
     printf("  traces=%d noise=%.2f seed=0x%x secret=0x%02x\n", ntraces, noise, seed, secret);
     printf("  model: v = secret XOR pub[i]; leak shares of v via asm masking\n");
     printf("  circuit: sim/board/circuit.md\n\n");
@@ -141,7 +141,7 @@ int main(int argc, char **argv) {
     printf("  HOCPA 0×2:       best=0x%02x |corr|=%.4f  %s\n\n", g2b, c2b,
            g2b == secret ? "MATCH" : "miss");
 
-    printf("OK — full simulated shunt/ADC board exercised real masklamp asm.\n");
+    printf("OK — full simulated shunt/ADC board exercised real camoukem asm.\n");
     free(pub);
     return 0;
 }
