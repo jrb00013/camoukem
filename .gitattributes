@@ -1,0 +1,12 @@
+# Force GitHub linguist to classify this as an Assembly research repo
+*.S linguist-language=Assembly
+*.s linguist-language=Assembly
+*.inc linguist-language=Assembly
+asm/** linguist-detectable=true
+
+# Keep harness C from drowning the language bar
+src/** linguist-vendored
+tests/** linguist-vendored
+sim/** linguist-vendored
+docs/** linguist-documentation
+*.md linguist-documentation

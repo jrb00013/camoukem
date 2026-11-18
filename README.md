@@ -1,48 +1,59 @@
 # masked-mlkem-guide
 
-**Assembly-first ML-KEM-768** for Jetson Orin (AArch64 + NEON): poly/NTT kernels, order-1 arithmetic masking, θ-gauge unit spin, software HOCPA hooks.
+```text
+   ███╗   ███╗██╗     ██╗  ██╗███████╗███╗   ███╗
+   ████╗ ████║██║     ██║ ██╔╝██╔════╝████╗ ████║
+   ██╔████╔██║██║     █████╔╝ █████╗  ██╔████╔██║
+   ██║╚██╔╝██║██║     ██╔═██╗ ██╔══╝  ██║╚██╔╝██║
+   ██║ ╚═╝ ██║███████╗██║  ██╗███████╗██║ ╚═╝ ██║
+   ╚═╝     ╚═╝╚══════╝╚═╝  ╚═╝╚══════╝╚═╝     ╚═╝
+        AArch64 · NEON · Masking · θ-gauge
+```
+
+**Experimental research repo: higher-order masked ML-KEM-768 with the hot path in hand-written AArch64 assembly.**
 
 Owned by [`jrb00013`](https://github.com/jrb00013).
 
-> Higher-order masked ML-KEM-768 with AArch64 NEON kernels and software-simulated HOCPA evaluation on Jetson Orin.
+This is not a tutorial clone of Kyber in C. The GitHub language bar is meant to read **Assembly**. Kernels live under `asm/aarch64/*.S`.
 
-## Build (cross from x86)
+## Thesis
+
+> Higher-order masked ML-KEM-768 · AArch64 NEON · θ-domain spin · software-sim HOCPA — on Jetson Orin.
+
+## What is assembly here
+
+| Kernel | File | Research angle |
+| --- | --- | --- |
+| Poly add/sub/neg/copy/zero | `poly_*.S` | NEON 8×int16 |
+| Barrett / csubq / tomont | `poly_reduce.S`, `montgomery.S` | CT reduction |
+| NTT / INTT / NEON NTT | `ntt.S`, `intt.S`, `ntt_neon.S` | Lattice hot path |
+| Basemul (+acc) | `basemul.S`, `basemul_acc.S` | NTT-domain mul |
+| Order-1/2 mask share | `mask_share.S`, `mask_order2.S` | SCA shares in asm |
+| θ multiplicative shares | `theta_mulshare.S` | Spatial / angle chart |
+| Unit spin | `spin_mul.S` | Gauge randomization |
+| CBD2 / compress / serdes | `poly_cbd2.S`, `poly_compress.S`, … | Sampling & wire |
+| Keccak-f[1600] | `keccak_f1600.S` | SHAKE/FO path in asm |
+| HW leak map | `hw_leak.S` | Sim-HOCPA traces |
+| CT cmov | `cmov.S` | FO compare helper |
+
+C under `src/` / `tests/` is a thin harness only (linguist-vendored via `.gitattributes`).
+
+## Build (no Docker required)
 
 ```bash
-# needs aarch64-linux-gnu-gcc + qemu-user
-make clean && make all && make test
+# uses $HOME/toolchains Arm GNU if present; on Orin: make CROSS_COMPILE=
+make clean && make asmcheck && make all
+make test   # needs qemu-aarch64 on x86
 ```
 
-Docker (no host cross toolchain):
+## Docs
 
-```bash
-docker run --rm -v "$PWD":/work -w /work ubuntu:24.04 bash -lc \
-  'apt-get update -qq && DEBIAN_FRONTEND=noninteractive apt-get install -y -qq \
-   gcc-aarch64-linux-gnu binutils-aarch64-linux-gnu qemu-user make && make test'
-```
-
-On Orin natively: `make CROSS_COMPILE= all test`
-
-## Layout
-
-| Path | Role |
-| --- | --- |
-| `asm/aarch64/*.S` | Hand-written kernels (add/sub/NTT/basemul/spin/mask refresh) |
-| `include/` | C ABI |
-| `src/` | Thin orchestration (mask, spin, smoke) + C NTT oracle |
-| `tests/` | QEMU-run self-tests |
-| `sim/` | HW leakage / HOCPA stubs |
-| `docs/` | Learning path + θ-domain research note |
-| `ARCHITECTURE.md` | Full design |
+[`ARCHITECTURE.md`](ARCHITECTURE.md) · [`docs/09-spatial-theta-masking.md`](docs/09-spatial-theta-masking.md)
 
 ## Status
 
-Real AArch64 assembly library `libmlkem_neon.a` with passing `test_poly`, `test_ntt`, `test_mask`, `test_spin`, `smoke`.
-
-Research / learning code — **not** production cryptography.
+Research / learning. **Not** production cryptography. Pushing asm-only gadgets, θ-domain shares, HOCPA simulation, NEON NTT.
 
 ## License
 
 CC0-1.0
-
-<!-- shipped via PR train -->
