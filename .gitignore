@@ -21,3 +21,4 @@ build/
 dist/
 *.trace
 *.npz
+tests/test_asm_mask
