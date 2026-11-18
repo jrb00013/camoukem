@@ -1,56 +1,46 @@
-# Higher-order masked ML-KEM-768 (learning guide)
+# masked-mlkem-guide
 
-**Thesis target**
-
-> Higher-order masked ML-KEM-768 with AArch64 NEON kernels and software-simulated HOCPA evaluation on Jetson Orin.
-
-This repo documents what that means, the math to learn, and a software-first project path. It is a **study + design guide**, not a production crypto library.
+**Assembly-first ML-KEM-768** for Jetson Orin (AArch64 + NEON): poly/NTT kernels, order-1 arithmetic masking, θ-gauge unit spin, software HOCPA hooks.
 
 Owned by [`jrb00013`](https://github.com/jrb00013).
 
----
+> Higher-order masked ML-KEM-768 with AArch64 NEON kernels and software-simulated HOCPA evaluation on Jetson Orin.
 
-## Plain-English one-liner
+## Build (cross from x86)
 
-Build NIST’s post-quantum key exchange (**ML-KEM / Kyber**), protect secret values by splitting them into random shares (**masking**), harden that against attackers who combine multiple leaks (**higher-order**), speed the hot math with **ARM NEON assembly** on a **Jetson Orin**, and test the protection with **fake power traces + HOCPA** in software (no oscilloscope required).
+```bash
+# needs aarch64-linux-gnu-gcc + qemu-user
+make clean && make all && make test
+```
 
----
+Docker (no host cross toolchain):
 
-## Read in this order
+```bash
+docker run --rm -v "$PWD":/work -w /work ubuntu:24.04 bash -lc \
+  'apt-get update -qq && DEBIAN_FRONTEND=noninteractive apt-get install -y -qq \
+   gcc-aarch64-linux-gnu binutils-aarch64-linux-gnu qemu-user make && make test'
+```
 
-| # | Doc | What you get |
-| --- | --- | --- |
-| 1 | [docs/00-glossary.md](docs/00-glossary.md) | Every buzzword in the thesis sentence |
-| 2 | [docs/01-what-higher-order-means.md](docs/01-what-higher-order-means.md) | Not differential equations — multi-leak SCA |
-| 3 | [docs/02-mlkem-and-kyber.md](docs/02-mlkem-and-kyber.md) | What ML-KEM-768 is |
-| 4 | [docs/03-masking.md](docs/03-masking.md) | Shares, arithmetic vs Boolean, order |
-| 5 | [docs/04-ntt-and-neon.md](docs/04-ntt-and-neon.md) | NTT + AArch64 NEON kernels |
-| 6 | [docs/05-hocpa-and-simulation.md](docs/05-hocpa-and-simulation.md) | Software-simulated attacks |
-| 7 | [docs/06-math-roadmap.md](docs/06-math-roadmap.md) | Math prerequisites by topic |
-| 8 | [docs/07-project-plan.md](docs/07-project-plan.md) | Phased build plan (Orin-first, software-only) |
-| 9 | [docs/08-frontier-context.md](docs/08-frontier-context.md) | Why this gap still matters in 2025–2026 |
-| 10 | [docs/09-spatial-theta-masking.md](docs/09-spatial-theta-masking.md) | Beyond masking: spin / θ-domain / spatial chart |
-| 11 | [examples/masked_add_mod_q.py](examples/masked_add_mod_q.py) | Tiny hands-on: 2-share add mod 3329 |
-| 12 | [examples/unit_spin_mod_q.py](examples/unit_spin_mod_q.py) | Random unit spin (θ-gauge without explicit log) |
+On Orin natively: `make CROSS_COMPILE= all test`
 
-Supporting notes live under [`refs/`](refs/).
+## Layout
 
----
-
-## Hardware roles (software-first)
-
-| Machine | Role |
+| Path | Role |
 | --- | --- |
-| **Jetson Orin** | Main build, NEON asm, benches, attack simulation |
-| **ESP32** | Optional second ISA port / IoT demo |
-| **STM32 / ChipWhisperer** | Optional later — physical TVLA (not required for this guide’s software path) |
-
----
+| `asm/aarch64/*.S` | Hand-written kernels (add/sub/NTT/basemul/spin/mask refresh) |
+| `include/` | C ABI |
+| `src/` | Thin orchestration (mask, spin, smoke) + C NTT oracle |
+| `tests/` | QEMU-run self-tests |
+| `sim/` | HW leakage / HOCPA stubs |
+| `docs/` | Learning path + θ-domain research note |
+| `ARCHITECTURE.md` | Full design |
 
 ## Status
 
-Documentation and learning path. Implementation code may be added later under `src/` once the study path is underway.
+Real AArch64 assembly library `libmlkem_neon.a` with passing `test_poly`, `test_ntt`, `test_mask`, `test_spin`, `smoke`.
+
+Research / learning code — **not** production cryptography.
 
 ## License
 
-CC0-1.0 for docs and examples unless noted otherwise. Do **not** treat example code as production cryptography.
+CC0-1.0

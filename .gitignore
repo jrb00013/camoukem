@@ -8,6 +8,12 @@ venv/
 *.a
 *.so
 *.out
+smoke
+tests/test_poly
+tests/test_ntt
+tests/test_mask
+tests/test_spin
+libmlkem_neon.a
 .DS_Store
 .idea/
 .vscode/
